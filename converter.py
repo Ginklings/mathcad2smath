@@ -4,14 +4,25 @@
 # from lxml import etree
 import xml.etree.ElementTree as ET
 import os
-
+import custom_mathcad_function
 
 __author__ = "André Ginklings"
 __credits__ = ["André Ginklings"]
 
 
 SCHEMA = '{{http://schemas.mathsoft.com/worksheet30}}{}'
-
+INCLUDE_TEMPLATE = '''    <region region-id="{}" left="267.75" top="0" width="271.75" height="18.75" align-x="264.5" align-y="11" show-border="false" show-highlight="false" is-protected="true" z-order="0" background-color="inherit" tag="">
+      <math optimize="false" disable-calc="false">
+        <ml:define xmlns:ml="http://schemas.mathsoft.com/math30">
+          <ml:id xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">custom_mathcad_functions</ml:id>
+          <ml:apply xmlns:ml="http://schemas.mathsoft.com/math30">
+            <ml:id xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">include</ml:id>
+            <ml:str xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">{}\\002E\\sm</ml:str>
+          </ml:apply>
+        </ml:define>
+      </math>
+    </region>
+'''
 
 def xtag(t):
     return SCHEMA.format(t)
@@ -35,7 +46,7 @@ def create_if_apply(ifthen, parent):
     return new_apply
 
     
-def converter(planilha):
+def converter(planilha, use_custom_mathcad_function=True):
     if '(SMATH)' in planilha:
         return
     tree = ET.parse(planilha)
@@ -46,6 +57,12 @@ def converter(planilha):
     ET.register_namespace('ml', 'http://schemas.mathsoft.com/math30')
     ET.register_namespace('u', 'http://schemas.mathsoft.com/units10')
     ET.register_namespace('pv', 'http://schemas.mathsoft.com/provenance10')
+    
+    if use_custom_mathcad_function:
+        custom_mathcad_function.save_sm_file(os.path.dirname(planilha))
+        regions = root.find('{http://schemas.mathsoft.com/worksheet30}regions')
+        custom = INCLUDE_TEMPLATE.format(99999999, 'custom')
+        regions.insert(0, ET.fromstring(custom))
     
     # Change IF statement (Mathcad program-IFTHEN/OTHERWISE to Smath IF/ELSE)
     for define in root.findall('.//{http://schemas.mathsoft.com/math30}define'):
@@ -179,7 +196,7 @@ def converter(planilha):
 
 if __name__ == '__main__':
     from glob import glob
-    basedir = r''
+    basedir = r'C:\Users\andrecruz\Documents\teste\mathcad'
     for planilha in glob(os.path.join(basedir, '*.xmcd')):
         print(planilha)
         converter(planilha)

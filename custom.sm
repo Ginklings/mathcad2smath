@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-sm_file_string = '''<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <?application progid="SMath Studio Desktop" version="0.99.7822.147"?>
 <worksheet xmlns="http://smath.info/schemas/worksheet/1.0">
   <settings ppi="96">
@@ -87,10 +84,4 @@ sm_file_string = '''<?xml version="1.0" encoding="utf-8" standalone="yes"?>
       </math>
     </region>
   </regions>
-</worksheet>'''
-
-def save_sm_file(basedir=''):
-    custom = basedir + '//' + 'custom.sm' if basedir else 'custom.sm'
-    with open(custom, 'w', encoding='utf-8') as f:
-        f.write(sm_file_string)
-save_sm_file()
+</worksheet>

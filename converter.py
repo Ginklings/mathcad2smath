@@ -11,7 +11,7 @@ __credits__ = ["André Ginklings"]
 
 
 SCHEMA = '{{http://schemas.mathsoft.com/worksheet30}}{}'
-INCLUDE_TEMPLATE = '''    <region region-id="{}" left="267.75" top="0" width="271.75" height="18.75" align-x="264.5" align-y="11" show-border="false" show-highlight="false" is-protected="true" z-order="0" background-color="inherit" tag="">
+INCLUDE_TEMPLATE = '''    <region region-id="{}" left="267.75" top="{}" width="271.75" height="18.75" align-x="264.5" align-y="11" show-border="false" show-highlight="false" is-protected="true" z-order="0" background-color="inherit" tag="">
       <math optimize="false" disable-calc="false">
         <ml:define xmlns:ml="http://schemas.mathsoft.com/math30">
           <ml:id xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">custom_mathcad_functions</ml:id>
@@ -45,6 +45,10 @@ def create_if_apply(ifthen, parent):
         parent.append(new_apply)
     return new_apply
 
+
+def include_file(parent, region_id, y_pos, filename):
+    to_include = INCLUDE_TEMPLATE.format(region_id, y_pos, filename)
+    parent.insert(0, ET.fromstring(to_include))
     
 def converter(planilha, use_custom_mathcad_function=True):
     if '(SMATH)' in planilha:
@@ -58,12 +62,12 @@ def converter(planilha, use_custom_mathcad_function=True):
     ET.register_namespace('u', 'http://schemas.mathsoft.com/units10')
     ET.register_namespace('pv', 'http://schemas.mathsoft.com/provenance10')
     
+    regions = root.find('{http://schemas.mathsoft.com/worksheet30}regions')
+    
     if use_custom_mathcad_function:
         custom_mathcad_function.save_sm_file(os.path.dirname(planilha))
-        regions = root.find('{http://schemas.mathsoft.com/worksheet30}regions')
-        custom = INCLUDE_TEMPLATE.format(99999999, 'custom')
-        regions.insert(0, ET.fromstring(custom))
-    
+        include_file(regions, 999999, 0, 'custom')
+        
     # Change IF statement (Mathcad program-IFTHEN/OTHERWISE to Smath IF/ELSE)
     for define in root.findall('.//{http://schemas.mathsoft.com/math30}define'):
         progs = define.findall('.//{http://schemas.mathsoft.com/math30}program')

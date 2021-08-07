@@ -183,10 +183,10 @@ def converter(planilha, setup):
                         except:
                             pass
 
-
             try:
                 name = eval.find('{http://schemas.mathsoft.com/math30}id').text
-                eval_dict[name] = region
+                if not name in eval_dict.keys():
+                    eval_dict[name] = region
             except:
                 try:
                     provenance = eval.find('{http://schemas.mathsoft.com/math30}provenance')
@@ -195,16 +195,13 @@ def converter(planilha, setup):
                         eval_dict[name] = region
                 except:
                     pass
-    print(define_dict.keys())
-    print(eval_dict.keys())
+
     for name in eval_dict.keys():
         eval_pos = float(eval_dict[name].get('top'))
         define_pos = float(define_dict[name].get('top'))
-        if name == 'TensaoPilar_adm':
-            print(eval_pos, define_pos)
         if eval_pos < define_pos:
             eval_dict[name].set('top', str(define_pos))
-            
+
     # Sumation convert
     for summation in root.findall('.//{http://schemas.mathsoft.com/math30}summation/..'):
         lb = summation.find('{http://schemas.mathsoft.com/math30}lambda')
@@ -250,20 +247,19 @@ def converter(planilha, setup):
         f.write(mathcad_xml)
 
 
+def convert_xmcd_in_path(path, setup):
+    for worksheet in glob(os.path.join(path, '*.xmcd')):
+        print(worksheet)
+        converter(worksheet, setup)
+        
+        
 def run(setup):
     print(setup.filename)
     if setup.filename:
         converter(setup.filename, setup)
+    elif setup.recursive:
+        for path_content in os.walk(setup.basedir):
+            convert_xmcd_in_path(path_content[0], setup)
     else:
-        for planilha in glob(os.path.join(setup.basedir, '*.xmcd')):
-            print(planilha)
-            converter(planilha, setup)
+        convert_xmcd_in_path(setup.basedir, setup)
 
-
-if __name__ == '__main__':
-    from glob import glob
-    basedir = r'C:\Users\andrecruz\Documents\teste\mathcad'
-    filename = r'C:\Users\andrecruz\Documents\teste\mathcad\tensao_pilar_final.xmcd'
-    setup = ConverterSetup(basedir=basedir, ignore_custom=False, prefix='(SMATH)', sufix='',
-                           add_external=[], external_path='', overwrite=True, filename=filename)
-    run(setup)

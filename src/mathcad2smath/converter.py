@@ -247,7 +247,10 @@ def converter(planilha, setup):
 def convert_xmcd_in_path(path, setup):
     for worksheet in glob(os.path.join(path, '*.xmcd')):
         print(worksheet)
-        converter(worksheet, setup)
+        try:
+            converter(worksheet, setup)
+        except:
+            print('Error converting file')
         
         
 def run(setup):

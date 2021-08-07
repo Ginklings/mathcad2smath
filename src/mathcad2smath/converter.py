@@ -4,11 +4,8 @@
 # from lxml import etree
 import xml.etree.ElementTree as ET
 import os
-import glob
-try:
-    from mathcad2smath import custom_mathcad_function
-except:
-    import custom_mathcad_function
+from glob import glob
+from mathcad2smath import custom_mathcad_function
 
 __author__ = "André Ginklings"
 __credits__ = ["André Ginklings"]
@@ -262,4 +259,3 @@ def run(setup):
             convert_xmcd_in_path(path_content[0], setup)
     else:
         convert_xmcd_in_path(setup.basedir, setup)
-

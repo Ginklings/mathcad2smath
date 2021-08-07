@@ -1,14 +1,17 @@
 """This module convert XMCD mathcad files in XMCD compatible with Smath Studio"""
 
 import argparse
-
+from mathcad2smath.converter import run
 
 def mathcad2smath(args):
     print(args)
     if args.overwrite:
         print('outputs files will be overwriten')
-    if args.recursive:
-        print('The search will be recursive')
+    if not args.filename:
+        if args.recursive:
+            print('The search will be recursive')
+    else:
+        print('Converting file: ', args.filename)
     print('The basedir directory is: ', args.basedir)
     print('The output prefix: ', args.prefix)
     print('The output sufix: ', args.sufix)
@@ -18,6 +21,8 @@ def mathcad2smath(args):
         print('The custom.sm file will be created...')
     for external in args.add_external:
         print('Adding file: {} from {}'.format(external, args.external_path))
+    run(setup=args)
+    
 
 
 def main():
@@ -50,6 +55,9 @@ def main():
     parser.add_argument('--external_path',
                         default='.',
                         help='The path to user external files')
+    parser.add_argument('-f', '--filename',
+                        default='',
+                        help='Convert specific file')
     args = parser.parse_args()
     mathcad2smath(args)
 

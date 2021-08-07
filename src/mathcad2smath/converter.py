@@ -4,7 +4,11 @@
 # from lxml import etree
 import xml.etree.ElementTree as ET
 import os
-import custom_mathcad_function
+import glob
+try:
+    from mathcad2smath import custom_mathcad_function
+except:
+    import custom_mathcad_function
 
 __author__ = "André Ginklings"
 __credits__ = ["André Ginklings"]
@@ -23,6 +27,13 @@ INCLUDE_TEMPLATE = '''    <region region-id="{}" left="267.75" top="{}" width="2
       </math>
     </region>
 '''
+
+
+class ConverterSetup(object):
+    
+    def __init__(self, **kwargs) -> None:
+        for key in kwargs.keys():
+            setattr(self, key, kwargs.get(key))
 
 def xtag(t):
     return SCHEMA.format(t)
@@ -50,9 +61,23 @@ def include_file(parent, region_id, y_pos, filename):
     to_include = INCLUDE_TEMPLATE.format(region_id, y_pos, filename)
     parent.insert(0, ET.fromstring(to_include))
     
-def converter(planilha, use_custom_mathcad_function=True):
-    if '(SMATH)' in planilha:
-        return
+def converter(planilha, setup):
+    output_filename = setup.prefix + os.path.basename(planilha)
+    output_filename = output_filename[:-5] + setup.sufix + '.xmcd'
+    out = os.path.join(os.path.dirname(planilha), output_filename)
+    
+    if not setup.overwrite:
+        if os.path.isfile(out):
+            return
+    
+    nchar_prefix = len(setup.prefix)
+    nchar_sufix = len(setup.sufix)
+    
+    # Dont convert files with output filename pattern
+    if setup.prefix == os.path.basename(planilha)[:nchar_prefix] \
+        and setup.sufix == os.path.basename(planilha)[-nchar_sufix:]:
+            return
+
     tree = ET.parse(planilha)
     root = tree.getroot()
     ET.register_namespace('', 'http://schemas.mathsoft.com/worksheet30')
@@ -64,10 +89,26 @@ def converter(planilha, use_custom_mathcad_function=True):
     
     regions = root.find('{http://schemas.mathsoft.com/worksheet30}regions')
     
-    if use_custom_mathcad_function:
+    y_pos = 0
+    region_id = 999909
+    if not setup.ignore_custom:
         custom_mathcad_function.save_sm_file(os.path.dirname(planilha))
-        include_file(regions, 999999, 0, 'custom')
+        include_file(regions, region_id, y_pos, 'custom')
         
+    for external_file in setup.add_external:
+        y_pos += 15
+        region_id += 1
+        external = os.path.join(setup.external_path, external_file)
+        if os.path.isfile(external):
+            include_file(regions, region_id, y_pos, external)
+        elif os.path.isfile(external_file):
+            include_file(regions, region_id, y_pos, external)
+        else:
+            for extract_external in glob(external):
+                include_file(regions, region_id, y_pos, extract_external)
+                y_pos += 15
+                region_id += 1
+
     # Change IF statement (Mathcad program-IFTHEN/OTHERWISE to Smath IF/ELSE)
     for define in root.findall('.//{http://schemas.mathsoft.com/math30}define'):
         progs = define.findall('.//{http://schemas.mathsoft.com/math30}program')
@@ -134,7 +175,14 @@ def converter(planilha, use_custom_mathcad_function=True):
                         name = define.find('{http://schemas.mathsoft.com/math30}id').text
                         define_dict[name] = region
                     except:
-                        pass
+                        try:
+                            define = math.find('{http://schemas.mathsoft.com/math30}define')
+                            function = define.find('{http://schemas.mathsoft.com/math30}function')
+                            name = function.find('{http://schemas.mathsoft.com/math30}id').text
+                            define_dict[name] = region
+                        except:
+                            pass
+
 
             try:
                 name = eval.find('{http://schemas.mathsoft.com/math30}id').text
@@ -143,12 +191,17 @@ def converter(planilha, use_custom_mathcad_function=True):
                 try:
                     provenance = eval.find('{http://schemas.mathsoft.com/math30}provenance')
                     name = provenance.find('{http://schemas.mathsoft.com/math30}id').text
-                    eval_dict[name] = region
+                    if not name in eval_dict.keys():
+                        eval_dict[name] = region
                 except:
                     pass
+    print(define_dict.keys())
+    print(eval_dict.keys())
     for name in eval_dict.keys():
         eval_pos = float(eval_dict[name].get('top'))
         define_pos = float(define_dict[name].get('top'))
+        if name == 'TensaoPilar_adm':
+            print(eval_pos, define_pos)
         if eval_pos < define_pos:
             eval_dict[name].set('top', str(define_pos))
             
@@ -180,7 +233,6 @@ def converter(planilha, use_custom_mathcad_function=True):
         for child in bounds:
             summation.append(child)
 
-    out = os.path.join(os.path.dirname(planilha), '(SMATH)' + os.path.basename(planilha))
     print(out)
     tree.write(out)
     with open(out) as f:
@@ -198,9 +250,20 @@ def converter(planilha, use_custom_mathcad_function=True):
         f.write(mathcad_xml)
 
 
+def run(setup):
+    print(setup.filename)
+    if setup.filename:
+        converter(setup.filename, setup)
+    else:
+        for planilha in glob(os.path.join(setup.basedir, '*.xmcd')):
+            print(planilha)
+            converter(planilha, setup)
+
+
 if __name__ == '__main__':
     from glob import glob
     basedir = r'C:\Users\andrecruz\Documents\teste\mathcad'
-    for planilha in glob(os.path.join(basedir, '*.xmcd')):
-        print(planilha)
-        converter(planilha)
+    filename = r'C:\Users\andrecruz\Documents\teste\mathcad\tensao_pilar_final.xmcd'
+    setup = ConverterSetup(basedir=basedir, ignore_custom=False, prefix='(SMATH)', sufix='',
+                           add_external=[], external_path='', overwrite=True, filename=filename)
+    run(setup)

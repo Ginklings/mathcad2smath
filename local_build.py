@@ -3,19 +3,23 @@
 
 import os
 import argparse
-from subprocess import run
+from subprocess import run, PIPE
 
 __author__ = "André Ginklings"
 __credits__ = ["André Ginklings"]
 
 
 def build(args):
-    print('***************** Build *****************')
-    print()
-    build_command = ['python', '-m', 'build']
-    build_status = run(build_command)
-    print()
-    upload_status, install_status = 0, 0
+    
+    build_status, upload_status, install_status = 0, 0, 0
+    
+    if not args.ignore_build:
+        print('***************** Build *****************')
+        print()
+        build_command = ['python', '-m', 'build']
+        build_status = run(build_command)
+        print()
+    
     if args.upload:
         print('***************** Upload *****************')
         upload_command = ['python', '-m', 'twine', 'upload', 'dist/*']
@@ -26,7 +30,7 @@ def build(args):
             upload_command.insert(5, 'testpypi')
         print(msg)
         print()
-        upload_status = run(build_status)
+        upload_status = run(upload_command)
         print()
     
     if args.install:
@@ -39,7 +43,7 @@ def build(args):
         else:
             if args.test:
                 msg += 'Test repo '
-                install_command += ['--index-url https://test.pypi.org/simple/', '--no-deps']
+                install_command += ['--index-url', 'https://test.pypi.org/simple/', '--no-deps']
             msg += 'PyPi'
             install_command.append('mathcad2smath')
         print(msg)
@@ -64,6 +68,9 @@ def main():
                         action='store_true',
                         help='Upload to PyPi')
     parser.add_argument('-t', '--test',
+                        action='store_true',
+                        help='Use test repo in upload')
+    parser.add_argument('--ignore_build',
                         action='store_true',
                         help='Use test repo in upload')
     args = parser.parse_args()

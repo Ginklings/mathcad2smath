@@ -30,7 +30,7 @@ def main():
         description='Convert XMCD mathcad files into XMCD compatible with Smath Studio'
     )
     parser.add_argument('-o', '--overwrite',
-                        action='store_false',
+                        action='store_true',
                         help='Overwrite the output file if exist')
     parser.add_argument('-r', '--recursive',
                         action='store_true',

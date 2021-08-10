@@ -12,19 +12,19 @@ __credits__ = ["André Ginklings"]
 
 
 SCHEMA = '{{http://schemas.mathsoft.com/worksheet30}}{}'
-INCLUDE_TEMPLATE = '''    <region region-id="{}" left="267.75" top="{}" width="271.75" height="18.75" align-x="264.5" align-y="11" show-border="false" show-highlight="false" is-protected="true" z-order="0" background-color="inherit" tag="">
+INCLUDE_TEMPLATE = '''
       <math optimize="false" disable-calc="false">
         <ml:define xmlns:ml="http://schemas.mathsoft.com/math30">
           <ml:id xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">custom_mathcad_functions</ml:id>
           <ml:apply xmlns:ml="http://schemas.mathsoft.com/math30">
             <ml:id xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">include</ml:id>
-            <ml:str xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">{}\\002E\\sm</ml:str>
+            <ml:str xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">{}</ml:str>
           </ml:apply>
         </ml:define>
       </math>
-    </region>
-'''
+      '''
 
+REGION_TEMPLATE = '<region region-id="{}" left="267.75" top="{}" width="271.75" height="18.75" align-x="264.5" align-y="11" show-border="false" show-highlight="false" is-protected="true" z-order="0" background-color="inherit" tag="">{}</region>'
 
 class ConverterSetup(object):
     
@@ -34,10 +34,6 @@ class ConverterSetup(object):
 
 def xtag(t):
     return SCHEMA.format(t)
-
-
-def xpathtag():
-    return 
 
 
 def add_tag(tags, new):
@@ -54,17 +50,41 @@ def create_if_apply(ifthen, parent):
     return new_apply
 
 
-def include_file(parent, region_id, y_pos, filename):
-    to_include = INCLUDE_TEMPLATE.format(region_id, y_pos, filename)
-    parent.insert(0, ET.fromstring(to_include))
-    
+def include_file(filename, parent=None, region=None, region_id=None, y_pos=None):
+    to_include = INCLUDE_TEMPLATE.format(filename)
+    if region is None:
+        region_to_include = REGION_TEMPLATE.format(region_id, y_pos, to_include)
+        parent.insert(0, ET.fromstring(region_to_include))
+    else:
+        region.insert(0, ET.fromstring(to_include))
+
+
+def get_all_children(root):
+    return [child for child in root]
+
+
+def delete_all_children(root):
+    for child in get_all_children(root):
+        root.remove(child)
+
+
+def apply_output_pattern(name, prefix, sufix, ext='.xmcd', use_sm_ext=False):
+    output_filename = prefix + name
+    ext_pos = -len(ext)
+    if use_sm_ext:
+        ext = '.sm'
+    return output_filename[:ext_pos] + sufix + ext
+
 def converter(planilha, setup):
-    output_filename = setup.prefix + os.path.basename(planilha)
-    output_filename = output_filename[:-5] + setup.sufix + '.xmcd'
-    out = os.path.join(os.path.dirname(planilha), output_filename)
+    output_filename = apply_output_pattern(os.path.basename(planilha),
+                                           setup.prefix, setup.sufix)
+    dirname = os.path.dirname(planilha)
+    out = os.path.join(dirname, output_filename)
+    print('Output file: ', out)
     
     if not setup.overwrite:
         if os.path.isfile(out):
+            print('Skipping: output file exist.')
             return
     
     nchar_prefix = len(setup.prefix)
@@ -90,19 +110,19 @@ def converter(planilha, setup):
     region_id = 999909
     if not setup.ignore_custom:
         custom_mathcad_function.save_sm_file(os.path.dirname(planilha))
-        include_file(regions, region_id, y_pos, 'custom')
+        include_file('custom\\002E\\sm', parent=regions, region_id=region_id, y_pos=y_pos)
         
     for external_file in setup.add_external:
         y_pos += 15
         region_id += 1
         external = os.path.join(setup.external_path, external_file)
         if os.path.isfile(external):
-            include_file(regions, region_id, y_pos, external)
+            include_file(external, parent=regions, region_id=region_id, y_pos=y_pos)
         elif os.path.isfile(external_file):
-            include_file(regions, region_id, y_pos, external)
+            include_file(external, parent=regions, region_id=region_id, y_pos=y_pos)
         else:
             for extract_external in glob(external):
-                include_file(regions, region_id, y_pos, extract_external)
+                include_file(extract_external, parent=regions, region_id=region_id, y_pos=y_pos)
                 y_pos += 15
                 region_id += 1
 
@@ -226,6 +246,22 @@ def converter(planilha, setup):
         summation.append(new_bound_var)
         for child in bounds:
             summation.append(child)
+            
+    # Add linked external files
+    for region in root.findall('.//{http://schemas.mathsoft.com/worksheet30}region'):
+        link = region.find('.//{http://schemas.mathsoft.com/worksheet30}link')
+        if link is not None:
+            delete_all_children(region)
+            href_text = link.get('href')
+            href = href_text.replace('./', '')
+            href_filename = apply_output_pattern(href, setup.prefix, setup.sufix, use_sm_ext=True)
+            if setup.filename:
+                href_dirname = os.path.split(href)[0]
+                if not href_dirname:
+                    href_dirname = dirname
+                if not os.path.isfile(os.path.join(href_dirname, href_filename)):
+                    href_filename = href
+            include_file(href_filename, region=region)        
 
     print(out)
     tree.write(out)
@@ -239,6 +275,11 @@ def converter(planilha, setup):
         mathcad_xml = mathcad_xml.replace('<ml:indexer/>', '<ml:id xml:space="preserve">el</ml:id>')
         mathcad_xml = mathcad_xml.replace('<ml:vectorSum/>', '<ml:id xml:space="preserve">sum</ml:id>')
         mathcad_xml = mathcad_xml.replace('<ml:matcol/>', '<ml:id xml:space="preserve">col</ml:id>')
+        mathcad_xml = mathcad_xml.replace('<ml:localDefine>', '<ml:id xml:space="preserve">line</ml:id><ml:define>')
+        mathcad_xml = mathcad_xml.replace('</ml:localDefine>', '</ml:define>')
+        mathcad_xml = mathcad_xml.replace('<ml:return>', '')
+        line_end_mark = '<ml:real>2</ml:real><ml:real>1</ml:real>'
+        mathcad_xml = mathcad_xml.replace('</ml:return>', line_end_mark)
         for tag in ['originRef', 'hash', 'parentRef', 'originComment', 'comment', 'contentHash']:
             mathcad_xml = mathcad_xml.replace(f'pv:{tag}', tag)
         f.write(mathcad_xml)

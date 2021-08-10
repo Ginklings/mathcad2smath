@@ -4,7 +4,7 @@ Command tool to convert mathcad XMCD to XMCD with Smath Studio support
 Usage: 
 
     mathcad2smath [-h] [-o] [-r] [-d BASEDIR] [-p PREFIX] [-s SUFIX] [--ignore_custom]
-                         [-e ADD_EXTERNAL [ADD_EXTERNAL ...]] [--external_path EXTERNAL_PATH] [-f FILENAME]
+                  [-e ADD_EXTERNAL [ADD_EXTERNAL ...]] [--external_path EXTERNAL_PATH] [-f FILENAME]
 
     Convert XMCD mathcad files into XMCD compatible with Smath Studio
 

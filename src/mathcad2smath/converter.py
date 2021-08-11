@@ -5,7 +5,7 @@
 import xml.etree.ElementTree as ET
 import os
 from glob import glob
-from subprocess import run as run_command
+from subprocess import PIPE, run as run_command
 from mathcad2smath import custom_mathcad_function
 
 __author__ = "André Ginklings"
@@ -34,10 +34,17 @@ class ConverterSetup(object):
             setattr(self, key, kwargs.get(key))
 
 
-def save_as_sm(xmcd: str, smath_path: str) -> None:
+def save_as_sm(xmcd: str, smath_path: str, test=False) -> None:
     smath = os.path.join(smath_path, 'SMathStudio_Desktop.exe')
     command = [smath, '-silent', '-e', '.sm', xmcd]
-    run_command(command)
+    save = True
+    if test:
+        status = run_command(command + ['-t'], stdout=PIPE)
+        if 'Testing failed' in status.stdout.decode('utf-8'):
+            save = False
+            print('Failed to create SM file. Only XMCD file generated.')
+    if save:
+        run_command(command, stdout=PIPE)
 
 
 def xtag(t):
@@ -83,6 +90,52 @@ def apply_output_pattern(name, prefix, sufix, ext='.xmcd', use_sm_ext=False):
         ext = '.sm'
     return output_filename[:ext_pos] + sufix + ext
 
+
+def has_if(element):
+    for el_id in element.findall('.//{http://schemas.mathsoft.com/math30}id'):
+        if el_id.text == 'if':
+            return True
+    return False
+    
+
+def get_index(parent, child):
+    return list(parent).index(child)
+
+
+def get_all_if(element):
+    all_ifs = []
+    if_parents = element.findall('.//{http://schemas.mathsoft.com/math30}id/..')
+    for parent in if_parents:
+        for el_id in parent.findall('{http://schemas.mathsoft.com/math30}id'):
+            if el_id.text == 'if':
+                if_index = get_index(parent, el_id)
+                condition = list(parent)[if_index + 1]
+                then = list(parent)[if_index + 2]
+                else_then = list(parent)[if_index + 3]
+                all_ifs.append((condition, then, else_then))
+    return all_ifs
+
+
+def is_function(element):
+    math = element.find('.//{http://schemas.mathsoft.com/worksheet30}math')
+    if math is not None:
+        define = math.find('.//{http://schemas.mathsoft.com/math30}define')
+        if define is not None:
+            if list(define)[0].tag == '{http://schemas.mathsoft.com/math30}function':
+                return True
+    return False
+
+
+def get_define_name(element):
+    math = element.find('.//{http://schemas.mathsoft.com/worksheet30}math')
+    name = ''
+    if math is not None:
+        define = math.find('.//{http://schemas.mathsoft.com/math30}define')
+        if define is not None:
+            name = define.find('.//{http://schemas.mathsoft.com/math30}id').text
+    return name
+
+
 def converter(planilha, setup):
     output_filename = apply_output_pattern(os.path.basename(planilha),
                                            setup.prefix, setup.sufix)
@@ -95,13 +148,17 @@ def converter(planilha, setup):
             print('Skipping: output file exist.')
             return
     
-    nchar_prefix = len(setup.prefix)
-    nchar_sufix = len(setup.sufix)
-    
     # Dont convert files with output filename pattern
-    if setup.prefix == os.path.basename(planilha)[:nchar_prefix] \
-        and setup.sufix == os.path.basename(planilha)[-nchar_sufix:]:
-            return
+    file_prefix = ''
+    file_sufix = ''
+    if setup.prefix:
+        nchar_prefix = len(setup.prefix)
+        file_prefix = os.path.basename(planilha)[:nchar_prefix]
+    if setup.sufix:
+        nchar_sufix = len(setup.sufix)
+        file_sufix = os.path.basename(planilha)[-nchar_sufix:]
+    if setup.prefix == file_prefix and setup.sufix == file_sufix:
+        return
 
     tree = ET.parse(planilha)
     root = tree.getroot()
@@ -279,8 +336,19 @@ def converter(planilha, setup):
 
     # Change function in if statement
     # recursive function dont work in a if condition
+    # all_functions = {}
     # for region in root.findall('.//{http://schemas.mathsoft.com/worksheet30}region'):
-    #     link = region.find('.//{http://schemas.mathsoft.com/worksheet30}link')
+    #     if has_if(region):
+    #         for if_case in get_all_if(region):
+    #             for apply in if_case[0].findall('.//{http://schemas.mathsoft.com/math30}apply'):
+    #                 if list(apply)[0].text in all_functions.keys():
+    #                     list(apply)[0].text = '_if__' + list(apply)[0].text
+    #     if is_function(region):
+    #         all_functions[get_define_name(region)] = region
+    #     else:
+    #         if get_define_name(region) in all_functions.keys():
+    #             del all_functions[get_define_name(region)]
+        
 
     print(out)
     tree.write(out)
@@ -304,6 +372,9 @@ def converter(planilha, setup):
         for tag in ['originRef', 'hash', 'parentRef', 'originComment', 'comment', 'contentHash']:
             mathcad_xml = mathcad_xml.replace(f'pv:{tag}', tag)
         f.write(mathcad_xml)
+    
+    if setup.save_as_sm:
+        save_as_sm(out, setup.smath_path, test=True)
 
 
 def convert_xmcd_in_path(path, setup):

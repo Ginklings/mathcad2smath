@@ -61,6 +61,9 @@ def main():
     parser.add_argument('--smath_path',
                         default=r'C:\Program Files (x86)\SMath Studio',
                         help='Path to Smath Studio instalation, convert external files to SM when needed')
+    parser.add_argument('--save_as_sm',
+                        action='store_true',
+                        help='Save output file as SM file')
     args = parser.parse_args()
     mathcad2smath(args)
 

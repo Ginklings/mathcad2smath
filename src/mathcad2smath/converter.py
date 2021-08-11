@@ -5,6 +5,7 @@
 import xml.etree.ElementTree as ET
 import os
 from glob import glob
+from subprocess import run as run_command
 from mathcad2smath import custom_mathcad_function
 
 __author__ = "André Ginklings"
@@ -31,6 +32,13 @@ class ConverterSetup(object):
     def __init__(self, **kwargs) -> None:
         for key in kwargs.keys():
             setattr(self, key, kwargs.get(key))
+
+
+def save_as_sm(xmcd: str, smath_path: str) -> None:
+    smath = os.path.join(smath_path, 'SMathStudio_Desktop.exe')
+    command = [smath, '-silent', '-e', '.sm', xmcd]
+    run_command(command)
+
 
 def xtag(t):
     return SCHEMA.format(t)
@@ -255,13 +263,24 @@ def converter(planilha, setup):
             href_text = link.get('href')
             href = href_text.replace('./', '')
             href_filename = apply_output_pattern(href, setup.prefix, setup.sufix, use_sm_ext=True)
+            href_filename_xmcd = apply_output_pattern(href, setup.prefix, setup.sufix)
             if setup.filename:
                 href_dirname = os.path.split(href)[0]
                 if not href_dirname:
                     href_dirname = dirname
                 if not os.path.isfile(os.path.join(href_dirname, href_filename)):
-                    href_filename = href
+                    if os.path.isfile(os.path.join(href_dirname, href_filename_xmcd)):
+                        save_as_sm(os.path.join(href_dirname, href_filename_xmcd), setup.smath_path)
+                        if not os.path.isfile(os.path.join(href_dirname, href_filename)):
+                            href_filename = href
+                    else:
+                        href_filename = href
             include_file(href_filename, region=region)        
+
+    # Change function in if statement
+    # recursive function dont work in a if condition
+    # for region in root.findall('.//{http://schemas.mathsoft.com/worksheet30}region'):
+    #     link = region.find('.//{http://schemas.mathsoft.com/worksheet30}link')
 
     print(out)
     tree.write(out)
@@ -280,6 +299,8 @@ def converter(planilha, setup):
         mathcad_xml = mathcad_xml.replace('<ml:return>', '')
         line_end_mark = '<ml:real>2</ml:real><ml:real>1</ml:real>'
         mathcad_xml = mathcad_xml.replace('</ml:return>', line_end_mark)
+        mathcad_xml = mathcad_xml.replace('<ml:program>', '<ml:apply>')
+        mathcad_xml = mathcad_xml.replace('</ml:program>', '</ml:apply>')
         for tag in ['originRef', 'hash', 'parentRef', 'originComment', 'comment', 'contentHash']:
             mathcad_xml = mathcad_xml.replace(f'pv:{tag}', tag)
         f.write(mathcad_xml)

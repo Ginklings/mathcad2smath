@@ -16,6 +16,10 @@ def build(args):
     if not args.ignore_build:
         print('***************** Build *****************')
         print()
+        dist_dir = r'.\dist'
+        for f in os.listdir(dist_dir):
+            print('Removing file: ', f)
+            os.remove(os.path.join(dist_dir, f))
         build_command = ['python', '-m', 'build']
         build_status = run(build_command)
         print()

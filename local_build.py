@@ -26,7 +26,8 @@ def build(args):
     
     if args.upload:
         print('***************** Upload *****************')
-        upload_command = ['python', '-m', 'twine', 'upload', 'dist/*']
+        pypirc = os.path.join(os.environ['DEV_PATH'], '.pypirc')
+        upload_command = ['python', '-m', 'twine', 'upload', 'dist/*', '--config-file', pypirc]
         msg = '----------> PyPi'
         if args.test:
             msg += ' test repo'

@@ -26,10 +26,8 @@ def convert_ifthen(root):
         while prog_parent is not None:
             for prog in prog_parent:
                 if prog.tag == '{http://schemas.mathsoft.com/math30}program':
-                    print(ET.tostring(prog).decode('utf-8'))
                     ifthens = prog.findall('{http://schemas.mathsoft.com/math30}ifThen')
                     otherwise = prog.find('{http://schemas.mathsoft.com/math30}otherwise')
-                    print(len(ifthens))
                     if len(ifthens) > 0:
                         prog_index = get_index(prog_parent, prog)
                         prog_parent.remove(prog)

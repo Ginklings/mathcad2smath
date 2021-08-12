@@ -2,44 +2,51 @@
 # -*- coding: utf-8 -*-
 
 import xml.etree.ElementTree as ET
-
+from mathcad2smath.core.utils import get_index, get_all_children
 
 __author__ = "André Ginklings"
 __credits__ = ["André Ginklings"]
 
 
 def create_if_apply(ifthen, parent):
+    "Create new 'apply' tag element for IF statement"
     new_apply = ET.fromstring('<ml:apply xmlns:ml="http://schemas.mathsoft.com/math30"></ml:apply>')
-    new_apply.append(ET.fromstring('<ml:id xmlns:ml="http://schemas.mathsoft.com/math30" xml:space="preserve">if</ml:id>'))
-    new_apply.extend([child for child in ifthen])
+    new_apply.append(ET.fromstring('<ml:id xmlns:ml=\
+        "http://schemas.mathsoft.com/math30" xml:space="preserve">if</ml:id>'))
+    new_apply.extend(get_all_children(ifthen))
     if parent:
         parent.append(new_apply)
     return new_apply
 
 
 def convert_ifthen(root):
-    # Change IF statement (Mathcad program-IFTHEN/OTHERWISE to Smath IF/ELSE)
+    "Convert the ifThen/Otherwise to if/else"
     for define in root.findall('.//{http://schemas.mathsoft.com/math30}define'):
-        progs = define.findall('.//{http://schemas.mathsoft.com/math30}program')
-        progs_parents = define.findall('.//{http://schemas.mathsoft.com/math30}program/..')
-        for i, prog in enumerate(progs):
-            ifthens = prog.findall('{http://schemas.mathsoft.com/math30}ifThen')
-            otherwise = prog.find('{http://schemas.mathsoft.com/math30}otherwise')
-            if len(ifthens) > 0:
-                prog_index = list(progs_parents[i]).index(prog)
-                progs_parents[i].remove(prog)
-                first_new_apply = None
-                new_apply_parent = None
-                for ifthen in ifthens:
-                    last_new_apply = create_if_apply(ifthen, new_apply_parent)
-                    new_apply_parent = last_new_apply
-                    if not first_new_apply:
-                        first_new_apply = last_new_apply
-                if otherwise:
-                    last_new_apply.extend([child for child in otherwise])
-                else:
-                    # Mathcad ifThen may do not have the otherwise
-                    # Smath always has a ELSE statement
-                    fake_else = ET.fromstring('<ml:real xmlns:ml="http://schemas.mathsoft.com/math30">0</ml:real>')
-                    last_new_apply.append(fake_else)
-                progs_parents[i].insert(prog_index, first_new_apply)
+        prog_parent = define.find('.//{http://schemas.mathsoft.com/math30}program/..')
+        while prog_parent is not None:
+            for prog in prog_parent:
+                if prog.tag == '{http://schemas.mathsoft.com/math30}program':
+                    print(ET.tostring(prog).decode('utf-8'))
+                    ifthens = prog.findall('{http://schemas.mathsoft.com/math30}ifThen')
+                    otherwise = prog.find('{http://schemas.mathsoft.com/math30}otherwise')
+                    print(len(ifthens))
+                    if len(ifthens) > 0:
+                        prog_index = get_index(prog_parent, prog)
+                        prog_parent.remove(prog)
+                        first_new_apply = None
+                        new_apply_parent = None
+                        for ifthen in ifthens:
+                            last_new_apply = create_if_apply(ifthen, new_apply_parent)
+                            new_apply_parent = last_new_apply
+                            if not first_new_apply:
+                                first_new_apply = last_new_apply
+                        if otherwise:
+                            last_new_apply.extend(get_all_children(otherwise))
+                        else:
+                            # Mathcad ifThen may do not have the otherwise
+                            # Smath always has a ELSE statement
+                            fake_else = ET.fromstring('<ml:real xmlns:ml=\
+                                "http://schemas.mathsoft.com/math30">0</ml:real>')
+                            last_new_apply.append(fake_else)
+                        prog_parent.insert(prog_index, first_new_apply)
+            prog_parent = define.find('.//{http://schemas.mathsoft.com/math30}program/..')

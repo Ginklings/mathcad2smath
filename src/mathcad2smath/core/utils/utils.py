@@ -22,12 +22,17 @@ def save_as_sm(xmcd: str, smath_path: str, test=False) -> None:
     command = [smath, '-silent', '-e', '.sm', xmcd, '-w', '6000']
     save = True
     if test:
-        status = run_command(command + ['-t'], stdout=PIPE)
-        if 'Testing failed' in status.stdout.decode('utf-8'):
-            save = False
-            log('Failed to create SM file. Only XMCD file generated.')
+        status = run_command(command + ['-t'], stdout=PIPE, check=False)
+        stdout = status.stdout.decode('utf-8')
+        if 'Testing failed' in stdout:
+            if len(stdout.split('Testing file')) > 1:
+                for line in stdout.split('Testing file')[1].split('\n'):
+                    if 'Error: ' in line:
+                        if not 'content differs.' in line:
+                            save = False
+                            log('Failed to create SM file. Only XMCD file generated.')
     if save:
-        run_command(command, stdout=PIPE)
+        run_command(command, stdout=PIPE, check=False)
 
 
 def include_file(filename, parent=None, region=None, region_id=None, y_pos=None):

@@ -13,24 +13,19 @@ from mathcad2smath.core.converters.summation import convert_summation
 from mathcad2smath.core.converters.link import convert_link
 
 from mathcad2smath.core.converters import inline_operations
-from mathcad2smath.core.utils import save_as_sm, apply_output_pattern, include_file
+from mathcad2smath.core.utils import save_as_sm, apply_output_pattern, include_file, log
 
 __author__ = "André Ginklings"
 __credits__ = ["André Ginklings"]
 
 
 SCHEMA = '{{http://schemas.mathsoft.com/worksheet30}}{}'
-MSG_PREFIX = '  ----> {}'
 
 class ConverterSetup(object):
     
     def __init__(self, **kwargs) -> None:
         for key in kwargs.keys():
             setattr(self, key, kwargs.get(key))
-
-
-def log(msg, optional='', ident=''):
-    print(ident + MSG_PREFIX.format(msg), optional)
 
 
 def converter(planilha, setup):

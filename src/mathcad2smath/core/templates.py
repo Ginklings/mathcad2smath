@@ -19,3 +19,5 @@ INCLUDE_TEMPLATE = '''
       '''
 
 REGION_TEMPLATE = '<region region-id="{}" left="267.75" top="{}" width="271.75" height="18.75" align-x="264.5" align-y="11" show-border="false" show-highlight="false" is-protected="true" z-order="0" background-color="inherit" tag="">{}</region>'
+
+MSG_PREFIX = '  ----> {}'

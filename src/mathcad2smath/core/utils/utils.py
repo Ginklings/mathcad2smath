@@ -7,11 +7,14 @@ import os
 from subprocess import PIPE, run as run_command
 
 from mathcad2smath.core.templates import *
-from mathcad2smath.converter import log
 
 
 __author__ = "André Ginklings"
 __credits__ = ["André Ginklings"]
+
+
+def log(msg, optional='', ident=''):
+    print(ident + MSG_PREFIX.format(msg), optional)
 
 
 def save_as_sm(xmcd: str, smath_path: str, test=False) -> None:

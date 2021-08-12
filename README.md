@@ -1,5 +1,5 @@
 # mathcad2smath
-Command tool to convert mathcad XMCD to XMCD with Smath Studio support
+Command tool to convert mathcad XMCD to XMCD with Smath Studio support.
 
 Usage: 
 
@@ -27,3 +27,10 @@ Usage:
                             The path to user external files
       -f FILENAME, --filename FILENAME
                             Convert specific file
+      --smath_path SMATH_PATH
+                            Path to Smath Studio instalation, convert external files to SM when needed
+      --save_as_sm          Save output file as SM file
+
+The "custom.sm" file has the "ceil" and "floor" function that is not defined in Smath Studio and define also a "Percent" variable, because the "%" char is translated as "Percent" when Smath import XMCD files.
+
+The SMATH_PATH is used to convert XMCD in SM file when there is a linked worksheet in file, because the "include" function in Smath only works with SM files. This is used also for save the converted file as SM with the "save_as_sm" option.

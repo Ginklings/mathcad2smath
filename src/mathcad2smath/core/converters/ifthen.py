@@ -19,11 +19,21 @@ def create_if_apply(ifthen, parent):
     return new_apply
 
 
+def get_current_prog(define, curr_index):
+    return list(define.findall('.//{http://schemas.mathsoft.com/math30}program/..'))[curr_index]
+
+
 def convert_ifthen(root):
     "Convert the ifThen/Otherwise to if/else"
     for define in root.findall('.//{http://schemas.mathsoft.com/math30}define'):
-        prog_parent = define.find('.//{http://schemas.mathsoft.com/math30}program/..')
-        while prog_parent is not None:
+        prog_parents = define.findall('.//{http://schemas.mathsoft.com/math30}program/..')
+        has_prog_parent = bool(prog_parents)
+        curr_index = 0
+        while has_prog_parent:
+            try:
+                prog_parent = get_current_prog(define, curr_index)
+            except IndexError:
+                break
             for prog in prog_parent:
                 if prog.tag == '{http://schemas.mathsoft.com/math30}program':
                     ifthens = prog.findall('{http://schemas.mathsoft.com/math30}ifThen')
@@ -47,4 +57,5 @@ def convert_ifthen(root):
                                 "http://schemas.mathsoft.com/math30">0</ml:real>')
                             last_new_apply.append(fake_else)
                         prog_parent.insert(prog_index, first_new_apply)
-            prog_parent = define.find('.//{http://schemas.mathsoft.com/math30}program/..')
+                    else:
+                        curr_index += 1

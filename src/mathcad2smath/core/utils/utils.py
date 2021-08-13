@@ -31,6 +31,7 @@ def save_as_sm(xmcd: str, smath_path: str, test=False) -> None:
                         if not 'content differs.' in line:
                             save = False
                             log('Failed to create SM file. Only XMCD file generated.')
+                            break
     if save:
         run_command(command, stdout=PIPE, check=False)
 

@@ -44,26 +44,36 @@ class MainApp(QMainWindow):
         super().__init__()
         uic.loadUi(os.path.join(DIRNAME, 'app.ui'), self)
         self.button_convert.clicked.connect(self.run_and_wait)
-        self.bt_basedir.clicked.connect(self.select_and_set_folder(self.edit_basedir, 'file'))
+        self.bt_basedir.clicked.connect(self.select_and_set_folder(self.edit_basedir, 'ask_mode'))
         self.bt_smath_path.clicked.connect(self.select_and_set_folder(self.edit_smath_path))
-        self.bt_external_file.clicked.connect(self.create_external_files_list)
+        self.bt_external_file.clicked.connect(self.select_and_set_folder(self.edit_external_file))
         self.single_file_mode.clicked.connect(self.set_single_mode)
         self.multi_files_mode.clicked.connect(self.set_multi_mode)
         self.edit_external_file.textChanged.connect(self.update_external_files)
         self.last_external_folder = ''
+        self.file_mode = 'directory'
         self.show()
-        
+
     def set_single_mode(self):
+        """
+        Set file mode to 'file'
+        Change main window label to indicate the mode
+        Uncheck the directory checkbox recursive
+        """
         self.file_mode_label.setText('Filename:')
         self.check_recursive.setChecked(False)
+        self.file_mode = 'file'
 
     def set_multi_mode(self):
+        """
+        Set file mode to 'directory'
+        Change main window label to indicate the mode
+        """
         self.file_mode_label.setText('Basedir:')
-        
-    def create_external_files_list(self):
-        self.select_and_set_folder(self.edit_external_file)()
-        
+        self.file_mode = 'directory'
+
     def update_external_files(self, folder=''):
+        """Update the exernal files list in ListView"""
         folder = self.edit_external_file.text()
         if os.path.isdir(folder):
             if self.last_external_path_changed(folder):
@@ -75,36 +85,49 @@ class MainApp(QMainWindow):
                 self.list_files.selectAll()
         else:
             self.list_files.clear()
-         
+
     def last_external_path_changed(self, folder):
+        """
+        Verify if the folder is not the same as the last folder for external file
+        If the last folder is empty string, return True
+        """
         changed = True
         if self.last_external_folder:
             changed = not os.path.samefile(folder, self.last_external_folder)
         return changed
 
     def get_item_text(self, item):
+        """Return the object text string"""
         return item.text()
         
     def get_selected_basedir(self):
+        """Get the text for basedir/filename and assign to LineEdit object"""
         folder = self.select_folder()
         self.edit_basedir.setText(folder)
-        
+
     def select_and_set_folder(self, edit, mode='directory'):
+        """Open file select dialog e put file/dir name in the LineEdit object"""
         def selec_and_set_folder():
             if mode == 'directory':
                 folder = self.select_folder()
             else:
-                folder = self.select_filename()
+                if self.file_mode == 'directory':
+                    folder = self.select_folder()
+                else:
+                    folder = self.select_filename()
             edit.setText(folder)
             return folder
         return selec_and_set_folder
 
     def select_filename(self):
+        """Open file select dialog and return the selected file name"""
         options = QFileDialog.Options()
-        filename = QFileDialog.getOpenFileName(self,"Select directory", "", "All Files (*)", options=options)
+        filename = QFileDialog.getOpenFileName(self,"Select directory", "", 
+                                               "All Files (*)", options=options)
         return filename[0]
 
     def select_folder(self):
+        """Open directory select dialog and return the selected directory name"""
         options = QFileDialog.Options()
         options |= QFileDialog.ShowDirsOnly
         basedir = QFileDialog.getExistingDirectory(self,"Select directory", "", options=options)
@@ -153,12 +176,13 @@ class MainApp(QMainWindow):
         return text
 
 
-def window():
-    '''Main app'''
+def run_app():
+    '''Main app call function'''
     app = QApplication(sys.argv)
     win = MainApp()
     win.setWindowTitle('Mathcad XMCD to Smath Converter')
     sys.exit(app.exec_())
 
 
-window()
+if __name__ == '__main__':
+    run_app()

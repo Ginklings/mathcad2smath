@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>537</width>
-    <height>484</height>
+    <width>522</width>
+    <height>573</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,15 +21,15 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>310</y>
+      <y>340</y>
       <width>491</width>
-      <height>101</height>
+      <height>171</height>
      </rect>
     </property>
     <property name="title">
      <string>External files</string>
     </property>
-    <widget class="QCheckBox" name="checkBox_5">
+    <widget class="QCheckBox" name="check_add_external">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -42,7 +42,10 @@
       <string>Add external files</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_5">
+    <widget class="QLineEdit" name="edit_external_file">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>120</x>
@@ -68,7 +71,10 @@
       <string>External files path</string>
      </property>
     </widget>
-    <widget class="QToolButton" name="toolButton">
+    <widget class="QToolButton" name="bt_external_file">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>460</x>
@@ -81,23 +87,39 @@
       <string>...</string>
      </property>
     </widget>
+    <widget class="QListWidget" name="list_files">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>70</y>
+       <width>431</width>
+       <height>91</height>
+      </rect>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::MultiSelection</enum>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>20</y>
+      <y>10</y>
       <width>491</width>
-      <height>80</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="title">
      <string>Search</string>
     </property>
-    <widget class="QCheckBox" name="checkBox_recursive">
+    <widget class="QCheckBox" name="check_recursive">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>380</x>
        <y>20</y>
        <width>92</width>
        <height>17</height>
@@ -106,13 +128,16 @@
      <property name="text">
       <string>Recursive</string>
      </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
     </widget>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="file_mode_label">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>40</y>
-       <width>39</width>
+       <y>100</y>
+       <width>51</width>
        <height>16</height>
       </rect>
      </property>
@@ -120,21 +145,21 @@
       <string>Basedir:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_basedir">
+    <widget class="QLineEdit" name="edit_basedir">
      <property name="geometry">
       <rect>
        <x>71</x>
-       <y>40</y>
+       <y>100</y>
        <width>381</width>
        <height>20</height>
       </rect>
      </property>
     </widget>
-    <widget class="QToolButton" name="toolButton_2">
+    <widget class="QToolButton" name="bt_basedir">
      <property name="geometry">
       <rect>
        <x>460</x>
-       <y>40</y>
+       <y>100</y>
        <width>21</width>
        <height>21</height>
       </rect>
@@ -143,53 +168,104 @@
       <string>...</string>
      </property>
     </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>81</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Mode:</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>40</y>
+       <width>84</width>
+       <height>42</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QRadioButton" name="single_file_mode">
+        <property name="text">
+         <string>Single file</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="multi_files_mode">
+        <property name="text">
+         <string>Multi files</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_3">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>110</y>
+      <y>150</y>
       <width>491</width>
-      <height>131</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="title">
      <string>Output options</string>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>30</y>
+       <x>20</x>
+       <y>20</y>
        <width>94</width>
        <height>88</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="check_overwrite">
         <property name="text">
          <string>Overwrite</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QCheckBox" name="checkBox_3">
+       <widget class="QCheckBox" name="check_ignore_custom">
         <property name="text">
          <string>Ignore custom</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QCheckBox" name="checkBox_4">
+       <widget class="QCheckBox" name="check_save_as_sm">
         <property name="text">
          <string>Save as SM</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
      </layout>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_4">
+    <widget class="QLineEdit" name="edit_sufix">
      <property name="geometry">
       <rect>
        <x>251</x>
@@ -228,7 +304,7 @@
       <string>Prefix</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_3">
+    <widget class="QLineEdit" name="edit_prefix">
      <property name="geometry">
       <rect>
        <x>251</x>
@@ -237,13 +313,16 @@
        <height>20</height>
       </rect>
      </property>
+     <property name="text">
+      <string>(SMATH)</string>
+     </property>
     </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_4">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>250</y>
+      <y>280</y>
       <width>491</width>
       <height>51</height>
      </rect>
@@ -264,7 +343,7 @@
       <string>Smath path</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_2">
+    <widget class="QLineEdit" name="edit_smath_path">
      <property name="geometry">
       <rect>
        <x>71</x>
@@ -277,7 +356,7 @@
       <string>C:\Program Files (x86)\SMath Studio</string>
      </property>
     </widget>
-    <widget class="QToolButton" name="toolButton_3">
+    <widget class="QToolButton" name="bt_smath_path">
      <property name="geometry">
       <rect>
        <x>460</x>
@@ -291,11 +370,11 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>430</y>
+      <x>340</x>
+      <y>520</y>
       <width>158</width>
       <height>25</height>
      </rect>
@@ -323,50 +402,50 @@
  <resources/>
  <connections>
   <connection>
-   <sender>checkBox_5</sender>
+   <sender>check_add_external</sender>
    <signal>clicked(bool)</signal>
-   <receiver>lineEdit_5</receiver>
-   <slot>setDisabled(bool)</slot>
+   <receiver>edit_external_file</receiver>
+   <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>128</x>
-     <y>338</y>
+     <y>368</y>
     </hint>
     <hint type="destinationlabel">
      <x>193</x>
-     <y>355</y>
+     <y>385</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>checkBox_5</sender>
+   <sender>check_add_external</sender>
    <signal>clicked(bool)</signal>
-   <receiver>toolButton</receiver>
-   <slot>setDisabled(bool)</slot>
+   <receiver>bt_external_file</receiver>
+   <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>40</x>
-     <y>341</y>
+     <y>371</y>
     </hint>
     <hint type="destinationlabel">
      <x>492</x>
-     <y>366</y>
+     <y>396</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>checkBox_5</sender>
+   <sender>check_add_external</sender>
    <signal>clicked(bool)</signal>
-   <receiver>lineEdit_5</receiver>
+   <receiver>edit_external_file</receiver>
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>74</x>
-     <y>343</y>
+     <y>373</y>
     </hint>
     <hint type="destinationlabel">
      <x>267</x>
-     <y>356</y>
+     <y>386</y>
     </hint>
    </hints>
   </connection>
@@ -377,12 +456,60 @@
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>377</x>
-     <y>442</y>
+     <x>367</x>
+     <y>532</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
      <y>446</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>check_add_external</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>list_files</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>80</x>
+     <y>368</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>285</x>
+     <y>415</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>multi_files_mode</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>check_recursive</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>102</x>
+     <y>85</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>412</x>
+     <y>39</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>single_file_mode</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>check_recursive</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>80</x>
+     <y>62</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>445</x>
+     <y>44</y>
     </hint>
    </hints>
   </connection>

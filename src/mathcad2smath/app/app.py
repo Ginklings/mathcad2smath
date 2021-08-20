@@ -99,7 +99,7 @@ class MainApp(QMainWindow):
     def get_item_text(self, item):
         """Return the object text string"""
         return item.text()
-        
+
     def get_selected_basedir(self):
         """Get the text for basedir/filename and assign to LineEdit object"""
         folder = self.select_folder()
@@ -122,7 +122,7 @@ class MainApp(QMainWindow):
     def select_filename(self):
         """Open file select dialog and return the selected file name"""
         options = QFileDialog.Options()
-        filename = QFileDialog.getOpenFileName(self,"Select directory", "", 
+        filename = QFileDialog.getOpenFileName(self,"Select directory", "",
                                                "All Files (*)", options=options)
         return filename[0]
 

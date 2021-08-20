@@ -2,30 +2,35 @@
 
 import argparse
 from mathcad2smath.converter import run
+from mathcad2smath.app.app import run_app
 
 def mathcad2smath(args):
-    print(args)
-    if args.overwrite:
-        print('outputs files will be overwriten')
-    if not args.filename:
-        if args.recursive:
-            print('The search will be recursive')
+    """Execute the command line"""
+    if args.gui:
+        run_app()
     else:
-        print('Converting file: ', args.filename)
-    print('The basedir directory is: ', args.basedir)
-    print('The output prefix: ', args.prefix)
-    print('The output sufix: ', args.sufix)
-    if args.ignore_custom:
-        print('Skipping create custom.sm file...')
-    else:
-        print('The custom.sm file will be created...')
-    for external in args.add_external:
-        print('Adding file: {} from {}'.format(external, args.external_path))
-    run(setup=args)
-    
+        if args.overwrite:
+            print('outputs files will be overwriten')
+        if not args.filename:
+            if args.recursive:
+                print('The search will be recursive')
+        else:
+            print('Converting file: ', args.filename)
+        print('The basedir directory is: ', args.basedir)
+        print('The output prefix: ', args.prefix)
+        print('The output sufix: ', args.sufix)
+        if args.ignore_custom:
+            print('Skipping create custom.sm file...')
+        else:
+            print('The custom.sm file will be created...')
+        for external in args.add_external:
+            print('Adding file: {} from {}'.format(external, args.external_path))
+        run(setup=args)
+
 
 
 def main():
+    """Main command line routine"""
     parser = argparse.ArgumentParser(
         description='Convert XMCD mathcad files into XMCD compatible with Smath Studio'
     )
@@ -64,6 +69,9 @@ def main():
     parser.add_argument('--save_as_sm',
                         action='store_true',
                         help='Save output file as SM file')
+    parser.add_argument('--gui',
+                        action='store_true',
+                        help='Open a gui version of script')
     args = parser.parse_args()
     mathcad2smath(args)
 

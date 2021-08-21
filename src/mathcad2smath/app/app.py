@@ -21,6 +21,7 @@ class RunnerDialog(QDialog):
 
     def __init__(self, parent, flags) -> None:
         super().__init__(parent=parent, flags=flags)
+        self.setWindowIcon(QtGui.QIcon(os.path.join(DIRNAME, 'icons', 'icon.png')))
         size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         size_policy.setHorizontalStretch(0)
         size_policy.setVerticalStretch(0)
@@ -43,6 +44,7 @@ class MainApp(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         uic.loadUi(os.path.join(DIRNAME, 'app.ui'), self)
+        self.setWindowIcon(QtGui.QIcon(os.path.join(DIRNAME, 'icons', 'icon.png')))
         self.button_convert.clicked.connect(self.run_and_wait)
         self.bt_basedir.clicked.connect(self.select_and_set_folder(self.edit_basedir, 'ask_mode'))
         self.bt_smath_path.clicked.connect(self.select_and_set_folder(self.edit_smath_path))

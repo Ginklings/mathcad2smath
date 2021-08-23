@@ -5,3 +5,4 @@ dist
 *.egg-info
 build
 .qt_for_python
+Installer
